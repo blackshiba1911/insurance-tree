@@ -146,6 +146,24 @@
           <stop offset="60%" stop-color="#e9d5ff" />
           <stop offset="100%" stop-color="#9333ea" />
         </radialGradient>
+        <!-- 有機自然枝幹漸層（根粗梢細立體光影） -->
+        <linearGradient id="branchGradLeft" x1="100%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stop-color="#443425" />
+          <stop offset="60%" stop-color="#78593a" />
+          <stop offset="100%" stop-color="#9a744e" />
+        </linearGradient>
+
+        <linearGradient id="branchGradRight" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#443425" />
+          <stop offset="60%" stop-color="#78593a" />
+          <stop offset="100%" stop-color="#9a744e" />
+        </linearGradient>
+
+        <!-- 樹枝分岔高光木紋 -->
+        <linearGradient id="barkHighlight" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stop-color="#a47e53" opacity="0.1" />
+          <stop offset="100%" stop-color="#f5d0a9" opacity="0.7" />
+        </linearGradient>
       </defs>
 
       <!-- 地質剖面層 -->
@@ -217,12 +235,33 @@
 
       <!-- ================= 地上樹冠枝葉（立體樹冠雲團塊） ================= -->
       <g id="tree-canopy">
-        <!-- 延展主枝幹 -->
-        <path d="M 530 250 Q 420 230 300 220" stroke="#78593a" stroke-width="8" fill="none" stroke-linecap="round"/>
-        <path d="M 565 240 Q 690 210 800 200" stroke="#78593a" stroke-width="8" fill="none" stroke-linecap="round"/>
-        <path d="M 535 210 Q 460 150 400 110" stroke="#78593a" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M 560 210 Q 630 140 710 100" stroke="#78593a" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M 550 220 L 550 90" stroke="#78593a" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <!-- ================= 具備厚度與分叉的有機自然樹枝 ================= -->
+        <g id="organic-branches">
+          <!-- 1. 左側主大枝（支撐實支實付冠）：粗幹漸細多邊形 -->
+          <path d="M 535 240 Q 430 240 310 220 Q 430 225 530 215 Z" fill="url(#branchGradLeft)" />
+          <!-- 左次生小枝椏（向上分叉） -->
+          <path d="M 440 230 Q 410 180 370 160 Q 415 185 435 230 Z" fill="url(#branchGradLeft)" opacity="0.85" />
+          <path d="M 530 230 Q 430 230 320 220" stroke="url(#barkHighlight)" stroke-width="2" fill="none" />
+
+          <!-- 2. 右側主大枝（支撐失能長照冠）：粗幹漸細多邊形 -->
+          <path d="M 565 240 Q 670 230 790 210 Q 670 215 560 215 Z" fill="url(#branchGradRight)" />
+          <!-- 右次生小枝椏（向上分叉） -->
+          <path d="M 660 225 Q 700 170 740 150 Q 695 175 665 225 Z" fill="url(#branchGradRight)" opacity="0.85" />
+          <path d="M 565 230 Q 670 220 780 210" stroke="url(#barkHighlight)" stroke-width="2" fill="none" />
+
+          <!-- 3. 左上斜升分枝（支撐重大傷病冠） -->
+          <path d="M 535 210 Q 470 160 405 115 Q 475 150 540 195 Z" fill="url(#branchGradLeft)" />
+          <path d="M 535 205 Q 475 155 415 120" stroke="url(#barkHighlight)" stroke-width="1.8" fill="none" />
+
+          <!-- 4. 右上斜升分枝（支撐意外巡防冠） -->
+          <path d="M 560 210 Q 625 150 695 115 Q 625 140 555 195 Z" fill="url(#branchGradRight)" />
+          <path d="M 560 205 Q 620 145 685 120" stroke="url(#barkHighlight)" stroke-width="1.8" fill="none" />
+
+          <!-- 5. 頂端承托主幹托座（托住黃金退休果） -->
+          <path d="M 542 220 Q 544 140 535 90 Q 550 85 565 90 Q 556 140 558 220 Z" fill="url(#trunkGrad)" />
+          <!-- 金色托托枝環 -->
+          <path d="M 530 95 Q 550 110 570 95" stroke="#d97706" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.7" />
+        </g>
 
         <!-- 樹冠 1：實支實付翡翠巨冠 (左中) -->
         <g id="leaf-med" class="tree-node node-bloomed" onclick="inspectNode('leaf-med')" transform="translate(300, 210)">
