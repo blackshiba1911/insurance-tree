@@ -170,57 +170,94 @@
       <line x1="80" y1="460" x2="1020" y2="460" stroke="#d6cfbe" stroke-width="2" stroke-dasharray="6 6" />
       <rect x="0" y="460" width="1100" height="390" fill="#ebe4d5" opacity="0.45" />
 
-      <!-- ================= 地底深層根系（依職業切換） ================= -->
+      <!-- ================= 渾厚盤根錯節地底老根（與樹幹相同高規格） ================= -->
       <g id="tree-roots">
-        <!-- 主根系脈絡 -->
-        <path d="M 550 460 Q 520 540 400 620" stroke="#1e3a5f" stroke-width="7" fill="none" stroke-linecap="round"/>
-        <path d="M 550 460 Q 550 560 550 670" stroke="#1e3a5f" stroke-width="8" fill="none" stroke-linecap="round"/>
-        <path d="M 550 460 Q 600 550 720 630" stroke="#1e3a5f" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M 400 620 Q 330 670 240 700" stroke="#2563eb" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M 550 670 Q 560 730 600 780" stroke="#0d9488" stroke-width="5" fill="none" stroke-linecap="round"/>
-        <path d="M 720 630 Q 820 680 880 720" stroke="#d97706" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <!-- 1. 地表巨型盤根基座（承接上方主幹重量，厚度與主幹等寬） -->
+        <path d="M 500 460 C 490 510 440 550 370 590 C 420 570 490 540 530 490 L 570 490 C 610 540 680 570 730 590 C 660 550 610 510 600 460 Z" fill="#2d1f15" opacity="0.8" />
 
-        <!-- 養分傳輸動態光流 -->
-        <path d="M 240 700 Q 330 670 400 620 Q 520 540 550 460" stroke="#93c5fd" stroke-width="2.5" fill="none" class="energy-vein" />
-        <path d="M 600 780 Q 560 730 550 670 Q 550 560 550 460" stroke="#5eead4" stroke-width="2.5" fill="none" class="energy-vein" />
-        <path d="M 880 720 Q 820 680 720 630 Q 600 550 550 460" stroke="#fcd34d" stroke-width="2.5" fill="none" class="energy-vein" />
+        <!-- 2. 渾厚實木主根群（粗徑 32px ~ 16px 漸縮，圓潤不破圖） -->
+        <g stroke="#3a2718" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <!-- 中央垂直扎入的錨定主根（通往 勞保年金根） -->
+          <path d="M 550 460 Q 550 560 570 650 Q 585 710 600 780" stroke-width="32" />
+          <path d="M 550 480 Q 550 580 575 660" stroke-width="20" stroke="#4a3320" />
+
+          <!-- 左向舒展側主根（通往 職域/就保根，再延伸至 災保根） -->
+          <path d="M 530 470 Q 480 530 400 620" stroke-width="28" />
+          <path d="M 400 620 Q 320 660 240 700" stroke-width="20" />
+          <!-- 左側深層扎地小鬚根 -->
+          <path d="M 460 550 Q 420 580 390 670" stroke-width="12" />
+          <path d="M 330 650 Q 280 670 250 750" stroke-width="8" opacity="0.7" />
+
+          <!-- 右向舒展側主根（通往 勞退個人專戶金囊） -->
+          <path d="M 570 470 Q 640 530 720 630" stroke-width="28" />
+          <path d="M 720 630 Q 800 670 880 720" stroke-width="22" />
+          <!-- 右側深層扎地小鬚根 -->
+          <path d="M 640 550 Q 690 590 710 690" stroke-width="12" />
+          <path d="M 790 660 Q 840 690 860 760" stroke-width="9" opacity="0.7" />
+        </g>
+
+        <!-- 3. 木質暗部陰影與表皮凹凸節點 -->
+        <g stroke="#1d120a" fill="none" stroke-linecap="round" opacity="0.5">
+          <path d="M 542 470 Q 540 570 562 670" stroke-width="8" />
+          <path d="M 520 480 Q 470 540 390 625" stroke-width="7" />
+          <path d="M 580 480 Q 650 540 730 635" stroke-width="7" />
+        </g>
+
+        <!-- 4. 實木受光面與冷衫木質立體高光 -->
+        <g stroke="#78593a" fill="none" stroke-linecap="round" opacity="0.6">
+          <path d="M 558 480 Q 558 570 578 660 Q 590 715 600 770" stroke-width="8" />
+          <path d="M 538 475 Q 490 530 405 615 Q 330 655 250 695" stroke-width="6" />
+          <path d="M 565 475 Q 630 530 715 625 Q 790 665 870 715" stroke-width="6" />
+        </g>
+
+        <!-- 5. 內嵌養分流動光脈（如結晶水脈般在粗根內心湧動） -->
+        <g fill="none" stroke-linecap="round">
+          <!-- 災保光脈 (冰河天青色) -->
+          <path d="M 240 700 Q 320 660 400 620 Q 480 530 535 470" stroke="#0284c7" stroke-width="3.5" class="energy-vein" opacity="0.9" />
+          <!-- 年金水脈 (冷翡翠色) -->
+          <path d="M 600 780 Q 585 710 570 650 Q 550 560 550 460" stroke="#0d9488" stroke-width="4" class="energy-vein" opacity="0.9" />
+          <!-- 退休金庫光脈 (暖琥珀色) -->
+          <path d="M 880 720 Q 800 670 720 630 Q 640 530 565 470" stroke="#d97706" stroke-width="3.5" class="energy-vein" opacity="0.9" />
+        </g>
+
+        <!-- ================= 根部節點膠囊（保持互動與點擊，更精準對齊深根） ================= -->
 
         <!-- 根部節點 1：公傷/職災根 -->
         <g class="tree-node" onclick="inspectNode('root-1')" transform="translate(240, 700)">
-          <circle cx="0" cy="0" r="28" fill="#ffffff" stroke="#0284c7" stroke-width="3" class="transition-all duration-200" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.08))" />
+          <circle cx="0" cy="0" r="28" fill="#ffffff" stroke="#0284c7" stroke-width="3" class="transition-all duration-200" filter="drop-shadow(0 4px 8px rgba(0,0,0,0.12))" />
           <text id="root-1-icon" x="0" y="5" font-size="18" text-anchor="middle">⚡</text>
           <g transform="translate(0, 42)">
-            <rect x="-60" y="-12" width="120" height="24" rx="6" fill="#ffffff" stroke="#e0ded7" />
+            <rect x="-60" y="-12" width="120" height="24" rx="6" fill="#ffffff" stroke="#bae6fd" />
             <text id="root-1-title" x="0" y="4" font-size="11" font-weight="bold" fill="#0369a1" text-anchor="middle">勞工災保根</text>
           </g>
         </g>
 
         <!-- 根部節點 2：在職生活/社會津貼根 -->
         <g class="tree-node" onclick="inspectNode('root-2')" transform="translate(400, 620)">
-          <circle cx="0" cy="0" r="24" fill="#ffffff" stroke="#6366f1" stroke-width="3" class="transition-all duration-200" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.08))" />
+          <circle cx="0" cy="0" r="25" fill="#ffffff" stroke="#6366f1" stroke-width="3" class="transition-all duration-200" filter="drop-shadow(0 4px 8px rgba(0,0,0,0.12))" />
           <text id="root-2-icon" x="0" y="5" font-size="15" text-anchor="middle">👶</text>
-          <g transform="translate(0, 36)">
-            <rect x="-60" y="-10" width="120" height="20" rx="5" fill="#ffffff" stroke="#e0ded7" />
+          <g transform="translate(0, 38)">
+            <rect x="-60" y="-10" width="120" height="20" rx="5" fill="#ffffff" stroke="#c7d2fe" />
             <text id="root-2-title" x="0" y="4" font-size="10" font-weight="bold" fill="#4338ca" text-anchor="middle">就業保險根</text>
           </g>
         </g>
 
         <!-- 根部節點 3：基礎法定月領年金深根 -->
         <g class="tree-node" onclick="inspectNode('root-3')" transform="translate(600, 780)">
-          <circle cx="0" cy="0" r="30" fill="#ffffff" stroke="#0d9488" stroke-width="3" class="transition-all duration-200" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.08))" />
+          <circle cx="0" cy="0" r="30" fill="#ffffff" stroke="#0d9488" stroke-width="3.5" class="transition-all duration-200" filter="drop-shadow(0 4px 8px rgba(0,0,0,0.12))" />
           <text id="root-3-icon" x="0" y="6" font-size="18" text-anchor="middle">🏛️</text>
           <g transform="translate(0, 44)">
-            <rect x="-60" y="-12" width="120" height="24" rx="6" fill="#ffffff" stroke="#e0ded7" />
+            <rect x="-60" y="-12" width="120" height="24" rx="6" fill="#ffffff" stroke="#a7f3d0" />
             <text id="root-3-title" x="0" y="4" font-size="11" font-weight="bold" fill="#0f766e" text-anchor="middle">勞保老年年金</text>
           </g>
         </g>
 
         <!-- 根部節點 4：專屬退休個人寶庫囊 -->
         <g class="tree-node" onclick="inspectNode('root-4')" transform="translate(880, 720)">
-          <circle cx="0" cy="0" r="28" fill="#ffffff" stroke="#d97706" stroke-width="3" class="transition-all duration-200" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.08))" />
+          <circle cx="0" cy="0" r="28" fill="#ffffff" stroke="#d97706" stroke-width="3" class="transition-all duration-200" filter="drop-shadow(0 4px 8px rgba(0,0,0,0.12))" />
           <text id="root-4-icon" x="0" y="6" font-size="18" text-anchor="middle">🪙</text>
           <g transform="translate(0, 42)">
-            <rect x="-60" y="-12" width="120" height="24" rx="6" fill="#ffffff" stroke="#e0ded7" />
+            <rect x="-60" y="-12" width="120" height="24" rx="6" fill="#ffffff" stroke="#fde68a" />
             <text id="root-4-title" x="0" y="4" font-size="11" font-weight="bold" fill="#b45309" text-anchor="middle">勞退個人專戶</text>
           </g>
         </g>
