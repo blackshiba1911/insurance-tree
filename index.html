@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生命之樹 · 全人防衛年鑑 | The Tree of Life</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Noto+Serif+TC:wght@600;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif;
+      background-color: #f7f5f0;
+    }
+    .serif-title {
+      font-family: 'Noto Serif TC', serif;
+    }
+    @keyframes pulseFlow {
+      0% { stroke-dashoffset: 120; opacity: 0.3; }
+      50% { opacity: 1; }
+      100% { stroke-dashoffset: 0; opacity: 0.3; }
+    }
+    .energy-vein {
+      stroke-dasharray: 8 12;
+      animation: pulseFlow 3s linear infinite;
+    }
+    .tree-node {
+      cursor: pointer;
+      user-select: none;
+    }
+    .tree-node:hover path,
+    .tree-node:hover circle {
+      stroke-width: 4px;
+      filter: brightness(1.15);
+    }
+    .tree-node text,
+    .tree-node rect {
+      pointer-events: none;
+    }
+    .node-dormant {
+      opacity: 0.45;
+      filter: grayscale(80%);
+    }
+    .node-dormant:hover {
+      opacity: 0.8;
+      filter: grayscale(20%);
+    }
+    .node-bloomed {
+      filter: drop-shadow(0 4px 12px rgba(217, 119, 6, 0.35));
+    }
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #d6d3cb;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex select-none text-stone-800">
+
+  <!-- ================= 主視圖：生命之樹畫布區 ================= -->
+  <div class="relative flex-1 h-full overflow-hidden bg-gradient-to-b from-[#fbfaf7] via-[#f5f2ea] to-[#ebe5d8]">
+
+    <!-- 左上角：品牌識別與功能列 -->
+    <div class="absolute top-5 left-5 z-20 flex items-center gap-3">
+      <div class="bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-sm border border-stone-200/80 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-amber-700/10 text-amber-800 flex items-center justify-center text-lg font-black">
+          🌱
+        </div>
+        <div>
+          <h1 class="serif-title text-base font-black text-stone-800 tracking-tight">生命之樹</h1>
+          <div class="text-[9px] font-bold text-stone-400 tracking-wider uppercase">全人生態防衛矩陣 · BIOTREE</div>
+        </div>
+      </div>
+
+      <div class="bg-white/90 backdrop-blur-md px-2 py-1.5 rounded-xl shadow-sm border border-stone-200/80 flex items-center gap-1 text-xs font-bold text-stone-600">
+        <button onclick="resetTree()" class="px-2.5 py-1 rounded-lg hover:bg-stone-100 transition-all flex items-center gap-1 text-stone-500">
+          <span>↺</span> 還原預設
+        </button>
+        <div class="w-px h-3.5 bg-stone-200 mx-1"></div>
+        <button onclick="expandAll()" class="px-2.5 py-1 rounded-lg hover:bg-stone-100 transition-all text-amber-800">
+          全樹繁盛
+        </button>
+      </div>
+    </div>
+
+    <!-- 左側懸浮：抗風韌性指數 HUD -->
+    <div class="absolute top-24 left-5 z-20 w-52 bg-white/85 backdrop-blur-md rounded-2xl p-4 shadow-sm border border-stone-200/80 hidden sm:block">
+      <div class="text-[10px] font-black tracking-widest text-stone-400 uppercase">抗風韌性度 RESILIENCE</div>
+      <div class="flex items-baseline gap-1 mt-1">
+        <span id="resilience-score" class="text-3xl font-black text-amber-700">50</span>
+        <span class="text-stone-400 text-xs font-bold">/ 100</span>
+      </div>
+      <div class="w-full bg-stone-100 h-2 rounded-full mt-2 overflow-hidden p-0.5 border border-stone-200">
+        <div id="resilience-bar" class="h-full bg-gradient-to-r from-amber-600 to-emerald-600 rounded-full transition-all duration-500" style="width: 50%;"></div>
+      </div>
+      <div class="mt-3 pt-3 border-t border-stone-100 text-[11px] text-stone-500 leading-relaxed" id="resilience-status">
+        根系已扎穩，上方樹冠防禦葉片尚未完全舒展。
+      </div>
+    </div>
+
+    <!-- 地平線分界標籤 -->
+    <div class="absolute top-[52%] left-6 z-10 flex items-center gap-2 pointer-events-none opacity-40">
+      <div class="w-2.5 h-2.5 rounded-full bg-amber-800"></div>
+      <span class="text-[11px] font-bold text-stone-500 tracking-widest uppercase">地平線 · 地底深層根系 (依職業扎根) ↕ 地上庇蔭樹冠 (自選防衛)</span>
+    </div>
+
+    <!-- 中央生命之樹 SVG -->
+    <svg id="tree-canvas" viewBox="0 0 1100 850" class="w-full h-full object-cover">
+      <defs>
+        <linearGradient id="trunkGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stop-color="#443425" />
+          <stop offset="50%" stop-color="#78593a" />
+          <stop offset="100%" stop-color="#a47e53" />
+        </linearGradient>
+
+        <radialGradient id="fruitGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fef08a" />
+          <stop offset="70%" stop-color="#f59e0b" />
+          <stop offset="100%" stop-color="#b45309" />
+        </radialGradient>
+      <!-- 醫療樹冠翡翠漸層 -->
+        <radialGradient id="canopyMed" cx="40%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#ecfdf5" />
+          <stop offset="60%" stop-color="#a7f3d0" />
+          <stop offset="100%" stop-color="#059669" />
+        </radialGradient>
+
+        <!-- 重傷樹冠火晶漸層 -->
+        <radialGradient id="canopyCi" cx="40%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#fff1f2" />
+          <stop offset="60%" stop-color="#fecdd3" />
+          <stop offset="100%" stop-color="#e11d48" />
+        </radialGradient>
+
+        <!-- 意外樹冠金橘漸層 -->
+        <radialGradient id="canopyAcc" cx="40%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#fffbeb" />
+          <stop offset="60%" stop-color="#fde68a" />
+          <stop offset="100%" stop-color="#d97706" />
+        </radialGradient>
+
+        <!-- 失能樹冠紫藤漸層 -->
+        <radialGradient id="canopyDis" cx="40%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#faf5ff" />
+          <stop offset="60%" stop-color="#e9d5ff" />
+          <stop offset="100%" stop-color="#9333ea" />
+        </radialGradient>
+      </defs>
+
+      <!-- 地質剖面層 -->
+      <line x1="80" y1="460" x2="1020" y2="460" stroke="#d6cfbe" stroke-width="2" stroke-dasharray="6 6" />
+      <rect x="0" y="460" width="1100" height="390" fill="#ebe4d5" opacity="0.45" />
+
+      <!-- ================= 地底深層根系（依職業切換） ================= -->
+      <g id="tree-roots">
+        <!-- 主根系脈絡 -->
+        <path d="M 550 460 Q 520 540 400 620" stroke="#1e3a5f" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M 550 460 Q 550 560 550 670" stroke="#1e3a5f" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M 550 460 Q 600 550 720 630" stroke="#1e3a5f" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 400 620 Q 330 670 240 700" stroke="#2563eb" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M 550 670 Q 560 730 600 780" stroke="#0d9488" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M 720 630 Q 820 680 880 720" stroke="#d97706" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+        <!-- 養分傳輸動態光流 -->
+        <path d="M 240 700 Q 330 670 400 620 Q 520 540 550 460" stroke="#93c5fd" stroke-width="2.5" fill="none" class="energy-vein" />
+        <path d="M 600 780 Q 560 730 550 670 Q 550 560 550 460" stroke="#5eead4" stroke-width="2.5" fill="none" class="energy-vein" />
+        <path d="M 880 720 Q 820 680 720 630 Q 600 550 550 460" stroke="#fcd34d" stroke-width="2.5" fill="none" class="energy-vein" />
+
+        <!-- 根部節點 1：公傷/職災根 -->
+        <g class="tree-node" onclick="inspectNode('root-1')" transform="translate(240, 700)">
+          <circle cx="0" cy="0" r="28" fill="#ffffff" stroke="#0284c7" stroke-width="3" class="transition-all duration-200" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.08))" />
+          <text id="root-1-icon" x="0" y="5" font-size="18" text-anchor="middle">⚡</text>
+          <g transform="translate(0, 42)">
+            <rect x="-60" y="-12" width="120" height="24" rx="6" fill="#ffffff" stroke="#e0ded7" />
+            <text id="root-1-title" x="0" y="4" font-size="11" font-weight="bold" fill="#0369a1" text-anchor="middle">勞工災保根</text>
+          </g>
+        </g>
+
+        <!-- 根部節點 2：在職生活/社會津貼根 -->
+        <g class="tree-node" onclick="inspectNode('root-2')" transform="translate(400, 620)">
+          <circle cx="0" cy="0" r="24" fill="#ffffff" stroke="#6366f1" stroke-width="3" class="transition-all duration-200" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.08))" />
+          <text id="root-2-icon" x="0" y="5" font-size="15" text-anchor="middle">👶</text>
+          <g transform="translate(0, 36)">
+            <rect x="-60" y="-10" width="120" height="20" rx="5" fill="#ffffff" stroke="#e0ded7" />
+            <text id="root-2-title" x="0" y="4" font-size="10" font-weight="bold" fill="#4338ca" text-anchor="middle">就業保險根</text>
+          </g>
+        </g>
+
+        <!-- 根部節點 3：基礎法定月領年金深根 -->
+        <g class="tree-node" onclick="inspectNode('root-3')" transform="translate(600, 780)">
+          <circle cx="0" cy="0" r="30" fill="#ffffff" stroke="#0d9488" stroke-width="3" class="transition-all duration-200" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.08))" />
+          <text id="root-3-icon" x="0" y="6" font-size="18" text-anchor="middle">🏛️</text>
+          <g transform="translate(0, 44)">
+            <rect x="-60" y="-12" width="120" height="24" rx="6" fill="#ffffff" stroke="#e0ded7" />
+            <text id="root-3-title" x="0" y="4" font-size="11" font-weight="bold" fill="#0f766e" text-anchor="middle">勞保老年年金</text>
+          </g>
+        </g>
+
+        <!-- 根部節點 4：專屬退休個人寶庫囊 -->
+        <g class="tree-node" onclick="inspectNode('root-4')" transform="translate(880, 720)">
+          <circle cx="0" cy="0" r="28" fill="#ffffff" stroke="#d97706" stroke-width="3" class="transition-all duration-200" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.08))" />
+          <text id="root-4-icon" x="0" y="6" font-size="18" text-anchor="middle">🪙</text>
+          <g transform="translate(0, 42)">
+            <rect x="-60" y="-12" width="120" height="24" rx="6" fill="#ffffff" stroke="#e0ded7" />
+            <text id="root-4-title" x="0" y="4" font-size="11" font-weight="bold" fill="#b45309" text-anchor="middle">勞退個人專戶</text>
+          </g>
+        </g>
+      </g>
+
+      <!-- ================= 樹幹核心 ================= -->
+      <g id="tree-trunk">
+        <path d="M 525 460 Q 540 330 520 220 L 580 220 Q 560 330 575 460 Z" fill="url(#trunkGrad)" />
+        <path d="M 545 440 Q 555 330 540 230" stroke="#45311f" stroke-width="1.5" fill="none" opacity="0.4" />
+        <path d="M 558 450 Q 565 320 560 225" stroke="#a27e56" stroke-width="1.5" fill="none" opacity="0.6" />
+      </g>
+
+      <!-- ================= 地上樹冠枝葉（立體樹冠雲團塊） ================= -->
+      <g id="tree-canopy">
+        <!-- 延展主枝幹 -->
+        <path d="M 530 250 Q 420 230 300 220" stroke="#78593a" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M 565 240 Q 690 210 800 200" stroke="#78593a" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M 535 210 Q 460 150 400 110" stroke="#78593a" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 560 210 Q 630 140 710 100" stroke="#78593a" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 550 220 L 550 90" stroke="#78593a" stroke-width="7" fill="none" stroke-linecap="round"/>
+
+        <!-- 樹冠 1：實支實付翡翠巨冠 (左中) -->
+        <g id="leaf-med" class="tree-node node-bloomed" onclick="inspectNode('leaf-med')" transform="translate(300, 210)">
+          <!-- 多層立體有機樹冠雲 (Path) -->
+          <path class="canopy-cloud transition-all duration-200" d="M -55,-10 C -70,-30 -60,-65 -30,-70 C -35,-95 0,-105 25,-85 C 50,-100 80,-75 70,-45 C 85,-20 65,10 40,5 C 20,25 -35,20 -55,-10 Z" fill="url(#canopyMed)" stroke="#047857" stroke-width="2" />
+          <circle cx="5" cy="-45" r="22" fill="#ffffff" opacity="0.9" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.08))" />
+          <text x="5" y="-38" font-size="20" text-anchor="middle">🛡️</text>
+          <g transform="translate(5, 18)">
+            <rect x="-48" y="-12" width="96" height="24" rx="6" fill="#ffffff" stroke="#a7f3d0" />
+            <text x="0" y="4" font-size="11" font-weight="bold" fill="#047857" text-anchor="middle">實支實付冠</text>
+          </g>
+        </g>
+
+        <!-- 樹冠 2：重大傷病晶火雲冠 (左上) -->
+        <g id="leaf-ci" class="tree-node node-dormant" onclick="inspectNode('leaf-ci')" transform="translate(390, 100)">
+          <path class="canopy-cloud transition-all duration-200" d="M -45,-10 C -60,-25 -50,-55 -25,-60 C -30,-80 0,-90 20,-70 C 40,-85 65,-65 60,-35 C 70,-15 55,10 30,5 C 15,20 -30,15 -45,-10 Z" fill="url(#canopyCi)" stroke="#be123c" stroke-width="2" />
+          <circle cx="5" cy="-40" r="20" fill="#ffffff" opacity="0.9" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.08))" />
+          <text x="5" y="-33" font-size="18" text-anchor="middle">🌋</text>
+          <g transform="translate(5, 18)">
+            <rect x="-48" y="-12" width="96" height="24" rx="6" fill="#ffffff" stroke="#fecdd3" />
+            <text x="0" y="4" font-size="11" font-weight="bold" fill="#be123c" text-anchor="middle">重大傷病冠</text>
+          </g>
+        </g>
+
+        <!-- 樹冠 3：意外巡防金琥雲冠 (右上) -->
+        <g id="leaf-acc" class="tree-node node-bloomed" onclick="inspectNode('leaf-acc')" transform="translate(710, 100)">
+          <path class="canopy-cloud transition-all duration-200" d="M -45,-10 C -60,-25 -50,-55 -25,-60 C -30,-80 0,-90 20,-70 C 40,-85 65,-65 60,-35 C 70,-15 55,10 30,5 C 15,20 -30,15 -45,-10 Z" fill="url(#canopyAcc)" stroke="#b45309" stroke-width="2" />
+          <circle cx="5" cy="-40" r="20" fill="#ffffff" opacity="0.9" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.08))" />
+          <text x="5" y="-33" font-size="18" text-anchor="middle">🏹</text>
+          <g transform="translate(5, 18)">
+            <rect x="-48" y="-12" width="96" height="24" rx="6" fill="#ffffff" stroke="#fde68a" />
+            <text x="0" y="4" font-size="11" font-weight="bold" fill="#b45309" text-anchor="middle">意外巡防冠</text>
+          </g>
+        </g>
+
+        <!-- 樹冠 4：失能長照紫藤巨冠 (右中) -->
+        <g id="leaf-disability" class="tree-node node-dormant" onclick="inspectNode('leaf-disability')" transform="translate(800, 200)">
+          <path class="canopy-cloud transition-all duration-200" d="M -55,-10 C -70,-30 -60,-65 -30,-70 C -35,-95 0,-105 25,-85 C 50,-100 80,-75 70,-45 C 85,-20 65,10 40,5 C 20,25 -35,20 -55,-10 Z" fill="url(#canopyDis)" stroke="#7e22ce" stroke-width="2" />
+          <circle cx="5" cy="-45" r="22" fill="#ffffff" opacity="0.9" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.08))" />
+          <text x="5" y="-38" font-size="20" text-anchor="middle">🍃</text>
+          <g transform="translate(5, 18)">
+            <rect x="-48" y="-12" width="96" height="24" rx="6" fill="#ffffff" stroke="#f5d0fe" />
+            <text x="0" y="4" font-size="11" font-weight="bold" fill="#7e22ce" text-anchor="middle">失能長照冠</text>
+          </g>
+        </g>
+
+        <!-- 樹頂黃金熟成之果 -->
+        <g id="fruit-retire" class="tree-node" onclick="inspectNode('fruit-retire')" transform="translate(550, 80)">
+          <circle cx="0" cy="0" r="34" fill="url(#fruitGlow)" stroke="#f59e0b" stroke-width="3" class="transition-all duration-200" filter="drop-shadow(0 8px 16px rgba(245, 158, 11, 0.45))" />
+          <text x="0" y="7" font-size="22" text-anchor="middle">✨</text>
+          <g transform="translate(0, 50)">
+            <rect x="-56" y="-12" width="112" height="24" rx="6" fill="#ffffff" stroke="#fde68a" />
+            <text x="0" y="4" font-size="11" font-weight="bold" fill="#b45309" text-anchor="middle">熟成退休之果</text>
+          </g>
+        </g>
+      </g>
+    </svg>
+
+    <!-- 左側彈出修剪筆記卡 (Drawer) -->
+    <div id="tree-drawer" class="absolute top-16 left-5 w-96 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-stone-200/90 p-6 z-30 transition-all duration-300 transform -translate-x-full opacity-0 pointer-events-none max-h-[85vh] overflow-y-auto">
+      
+      <div class="flex justify-between items-start pb-4 border-b border-stone-100">
+        <div>
+          <span id="card-tag" class="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 uppercase tracking-widest">
+            CANOPY LEAF
+          </span>
+          <h2 id="card-title" class="serif-title text-2xl font-black text-stone-800 mt-1.5">節點名稱</h2>
+          <p id="card-desc" class="text-xs text-stone-500 mt-0.5 leading-relaxed">節點一句話戰略核心描述。</p>
+        </div>
+        <button onclick="closeDrawer()" class="text-stone-400 hover:text-stone-600 text-lg font-bold p-1">✕</button>
+      </div>
+
+      <div class="bg-amber-50/70 border-l-4 border-amber-600 p-3.5 rounded-r-xl my-4">
+        <div class="text-[10px] font-black tracking-wider text-amber-900 uppercase">
+          ECOLOGY NOTE · 養分與防護串聯
+        </div>
+        <p id="card-note" class="text-xs text-amber-950/90 mt-1 leading-relaxed font-medium">
+          條款地雷與雙軌差異說明。
+        </p>
+      </div>
+
+      <div class="space-y-2 mb-5">
+        <div class="text-[11px] font-bold text-stone-400 tracking-wider uppercase">防護機理</div>
+        <div class="bg-stone-50 rounded-xl p-3 border border-stone-200/70">
+          <div class="text-xs font-bold text-stone-800">⚡ 給付/啟動時機</div>
+          <p id="card-trigger" class="text-xs text-stone-600 mt-1 leading-relaxed"></p>
+        </div>
+        <div class="bg-stone-50 rounded-xl p-3 border border-stone-200/70">
+          <div class="text-xs font-bold text-stone-800">⚠️ 除外與限制</div>
+          <p id="card-warning" class="text-xs text-stone-600 mt-1 leading-relaxed"></p>
+        </div>
+      </div>
+
+      <div id="card-action-box">
+        <button id="toggle-leaf-btn" class="w-full py-3 rounded-xl font-bold text-xs tracking-wider transition-all flex items-center justify-center gap-2">
+          舒展此防衛葉片
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 右側：成長年鑑導覽欄 ================= -->
+  <aside class="w-80 md:w-96 h-full bg-white border-l border-stone-200/80 flex flex-col shadow-lg z-20 overflow-hidden">
+    
+    <div class="p-5 border-b border-stone-100 bg-stone-50/40">
+      <div class="text-[10px] font-black tracking-widest text-stone-400 uppercase">THE GROWTH INDEX</div>
+      <h2 class="serif-title text-xl font-black text-stone-800 mt-0.5">全人生態防護架構</h2>
+
+      <div class="grid grid-cols-3 gap-2 mt-3.5">
+        <div class="bg-white border border-stone-200/80 p-2.5 rounded-xl text-center shadow-2xs">
+          <div id="stat-leaves" class="text-xl font-black text-amber-700">2 / 4</div>
+          <div class="text-[9px] font-bold text-stone-400 mt-0.5">樹冠葉片已展</div>
+        </div>
+        <div class="bg-white border border-stone-200/80 p-2.5 rounded-xl text-center shadow-2xs">
+          <div class="text-xl font-black text-sky-800">4 條</div>
+          <div class="text-[9px] font-bold text-stone-400 mt-0.5">底層法定主根</div>
+        </div>
+        <div class="bg-white border border-stone-200/80 p-2.5 rounded-xl text-center shadow-2xs">
+          <div class="text-xl font-black text-emerald-700">100%</div>
+          <div class="text-[9px] font-bold text-stone-400 mt-0.5">根系水脈通暢</div>
+        </div>
+      </div>
+
+      <p class="text-[11px] text-stone-500 mt-3 leading-relaxed">
+        深根汲取公辦年金水脈，枝葉化解醫療暴風驟雨，樹頂結出老後自由之果。
+      </p>
+    </div>
+
+    <!-- 中段：育樹土壤身分切換 -->
+    <div class="p-5 border-b border-stone-100 overflow-y-auto max-h-64">
+      <div class="text-[10px] font-black tracking-widest text-amber-800 uppercase flex items-center gap-1">
+        <span>GARDENER PROFILE</span> · 你的育樹土壤身分
+      </div>
+      <p class="text-[11px] text-stone-400 mt-0.5">切換職業土壤，地底法定水脈隨之動態扎根。</p>
+
+      <div class="grid grid-cols-3 gap-1.5 mt-3">
+        <button onclick="setGardener('worker')" id="btn-worker" class="gardener-btn py-2 px-1 text-center bg-amber-50 border border-amber-300 text-amber-900 rounded-xl text-xs font-bold transition-all">
+          受僱勞工
+        </button>
+        <button onclick="setGardener('civil')" id="btn-civil" class="gardener-btn py-2 px-1 text-center bg-stone-50 border border-stone-200 text-stone-600 hover:bg-stone-100 rounded-xl text-xs font-bold transition-all">
+          公教軍旅
+        </button>
+        <button onclick="setGardener('farmer')" id="btn-farmer" class="gardener-btn py-2 px-1 text-center bg-stone-50 border border-stone-200 text-stone-600 hover:bg-stone-100 rounded-xl text-xs font-bold transition-all">
+          自營農耕
+        </button>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-stone-100">
+        <div class="text-[10px] font-black tracking-widest text-stone-400 uppercase mb-2">
+          ⛈️ 氣候風雨壓力測試（點擊測試樹身防護）
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+          <button onclick="testStorm('surgery')" class="p-2 bg-stone-50 hover:bg-amber-50 border border-stone-200 rounded-xl text-left text-stone-700 transition-all">
+            🌧️ 達文西手術自費
+          </button>
+          <button onclick="testStorm('cancer')" class="p-2 bg-stone-50 hover:bg-amber-50 border border-stone-200 rounded-xl text-left text-stone-700 transition-all">
+            ⚡ 重大傷病侵襲
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 下段：根系與葉片年鑑手風琴目錄（依身分即時替換項目） -->
+    <div class="flex-1 overflow-y-auto p-4 space-y-2">
+      <div class="bg-stone-800 text-white px-3.5 py-2 rounded-xl flex justify-between items-center text-xs font-bold">
+        <span>全人防衛體系索引</span>
+        <span class="text-[10px] text-stone-400 font-normal">雙軌合流</span>
+      </div>
+
+      <!-- 地底根系目錄 -->
+      <div class="border border-stone-200 rounded-xl p-3 bg-white">
+        <div class="flex justify-between items-center font-bold text-xs text-stone-800 pb-2 border-b border-stone-100">
+          <span class="flex items-center gap-1.5 text-sky-800">
+            <span>▾</span> 汲水深根 (<span id="root-group-label">勞工法定體系</span>)
+          </span>
+          <span class="text-[10px] text-stone-400 font-normal">常駐啟動</span>
+        </div>
+        <div id="root-dir-list" class="pt-2 space-y-2 text-xs text-stone-600">
+          <!-- 由 JS 動態生成該身分的項目 -->
+        </div>
+      </div>
+
+      <!-- 地上樹冠目錄 -->
+      <div class="border border-stone-200 rounded-xl p-3 bg-white">
+        <div class="flex justify-between items-center font-bold text-xs text-stone-800 pb-2 border-b border-stone-100">
+          <span class="flex items-center gap-1.5 text-amber-800">
+            <span>▾</span> 遮陰樹冠 (個人商業防衛)
+          </span>
+          <span class="text-[10px] text-stone-400 font-normal">自由配置</span>
+        </div>
+        <div class="pt-2 space-y-2 text-xs text-stone-600">
+          <div onclick="inspectNode('leaf-med')" class="flex justify-between items-center hover:text-amber-700 cursor-pointer">
+            <span><b class="text-stone-300 font-normal mr-2">A1</b>醫療實支實付護葉</span>
+            <span id="list-status-med" class="text-[10px] text-emerald-700 bg-emerald-50 px-1 rounded">已舒展</span>
+          </div>
+          <div onclick="inspectNode('leaf-ci')" class="flex justify-between items-center hover:text-amber-700 cursor-pointer">
+            <span><b class="text-stone-300 font-normal mr-2">A2</b>重大傷病晶冠</span>
+            <span id="list-status-ci" class="text-[10px] text-stone-400 bg-stone-100 px-1 rounded">休眠中</span>
+          </div>
+          <div onclick="inspectNode('leaf-acc')" class="flex justify-between items-center hover:text-amber-700 cursor-pointer">
+            <span><b class="text-stone-300 font-normal mr-2">A3</b>意外巡防護葉</span>
+            <span id="list-status-acc" class="text-[10px] text-emerald-700 bg-emerald-50 px-1 rounded">已舒展</span>
+          </div>
+          <div onclick="inspectNode('leaf-disability')" class="flex justify-between items-center hover:text-amber-700 cursor-pointer">
+            <span><b class="text-stone-300 font-normal mr-2">A4</b>失能長照扶助葉</span>
+            <span id="list-status-disability" class="text-[10px] text-stone-400 bg-stone-100 px-1 rounded">休眠中</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ================= JavaScript 核心引擎 ================= -->
+  <script>
+    // 依職業切換的法定根系資料庫
+    const rootProfiles = {
+      worker: {
+        label: "勞工法定體系",
+        roots: {
+          'root-1': { icon: "⚡", title: "勞工災保根", tag: "地底主根系 · 職災", fullTitle: "勞工職業災害保險", desc: "工作場域與上下班必經途中遭遇事故的底層庇護神根。", note: "災保享有醫療免部分負擔、住院前30天膳食減半補助，傷病前2個月全薪發給。", trigger: "因工作公差或上下班通勤突發事故受傷致無法工作。", warning: "假日私人行程之摔車跌倒屬於普通傷害，不適用災保優惠。" },
+          'root-2': { icon: "👶", title: "就業保險根", tag: "地底主根系 · 在職", fullTitle: "就業保險給付體系", desc: "支撐育嬰留職停薪津貼（最長6個月、8成薪）與非自願離職失業給付。", note: "只要受僱於5人以上事業單位即強制納保，是兼顧生育與轉職的水脈。", trigger: "育嬰留停或非自願性離職經公立就業服務機構認定。", warning: "自願離職者無法請領就業保險之失業給付。" },
+          'root-3': { icon: "🏛️", title: "勞保老年年金", tag: "地底主根系 · 年金", fullTitle: "勞工保險老年年金", desc: "國家法定底層生活水脈，年資越長、月領越多，活到老領到老。", note: "為社會安全防護網底層，精算制度具備動態調整可能，建議搭配第二、三層補強。", trigger: "年滿法定請領年齡（現行65歲）且勞保年資滿15年以上。", warning: "提早請領每提前1年減給4%，最多減給20%。" },
+          'root-4': { icon: "🪙", title: "勞退個人專戶", tag: "地底主根系 · 專戶", fullTitle: "勞退新制專戶 (6%)", desc: "雇主每月法定提繳至少6%之專屬累積專戶，所有權全歸個人所有。", note: "具備可攜性，換工作專戶跟著走；自提6%還可全額免計個人綜合所得稅。", trigger: "年滿60歲即可向勞保局申請請領（一次請領或按月領取）。", warning: "若未主動提繳自提6%，專戶累積規模將僅維持在雇主提繳的基本盤。" }
+        }
+      },
+      civil: {
+        label: "公教軍旅體系",
+        roots: {
+          'root-1': { icon: "🎖️", title: "公教因公傷撫", tag: "地底主根系 · 公傷", fullTitle: "公教軍旅因公撫卹與傷殘給付", desc: "執行公務、戰備演訓遭遇突發危害時之公傷慰助與專屬醫療免除。", note: "依《公務人員因公傷殘死亡慰問金發給辦法》與軍人撫卹條例辦理。", trigger: "執行公務、差旅途中或戰備訓練遭遇意外導致傷害或殘廢。", warning: "認定必須具備因公因果關係，非公務時間之私人事故不適用。" },
+          'root-2': { icon: "📜", title: "公保生育喪葬", tag: "地底主根系 · 公保", fullTitle: "公教人員保險生活津貼", desc: "提供公教軍職生育給付（2個月俸額）、子女教育補助與眷屬喪葬津貼。", note: "由銓敘部主管、台灣銀行承保之國家法定公教福利安全網。", trigger: "在保期間分娩或眷屬身故，備齊戶籍證明申請。", warning: "部分補助項目與配偶同為公務員時不得重複請領。" },
+          'root-3': { icon: "⚖️", title: "公保養老給付", tag: "地底主根系 · 養老", fullTitle: "公教人員保險養老給付", desc: "符合公保退休年限時請領之養老一次金或按月年金（依法定投保年資核計）。", note: "與退撫新制為兩套平行法源，共同構成公教人員退休雙支柱。", trigger: "依法退休、資遣或繳費滿15年且年滿55歲以上。", warning: "若領取一次養老給付後再任公職，年資重新計算。" },
+          'root-4': { icon: "🏰", title: "公教退撫新制", tag: "地底主根系 · 退撫", fullTitle: "公教/軍人退撫儲金專戶", desc: "全新確定提撥制個人專戶（軍職滿20年享終生退休俸），國家保證收益與自主投資配置。", note: "2023年7月起新進公教採可攜式專戶，亦享有自願增額提繳免稅優惠。", trigger: "達到法定公教任職年限並辦理合格除役或屆齡退休。", warning: "軍職若服役未滿20年僅能領取一次退除給與，無按月退除俸。" }
+        }
+      },
+      farmer: {
+        label: "自營農耕體系",
+        roots: {
+          'root-1': { icon: "🌾", title: "農民職災保險", tag: "地底主根系 · 農災", fullTitle: "農民職業災害保險", desc: "農事操作受傷、田間割傷、農藥中毒、中暑等提供傷病給付日額加倍保障。", trigger: "於農事作業現場或必經途中遭遇外來突發意外。", note: "保費極為低廉，大部分由中央與地方政府高額補貼。", warning: "須具備合法農保被保險人身分且如期繳納職災保費。" },
+          'root-2': { icon: "🪴", title: "農保身障生育", tag: "地底主根系 · 農保", fullTitle: "農民健康保險身障與生育給付", desc: "提供基層農民分娩生育津貼（3個月）與1至15等身心障礙一次金庇護。", trigger: "加入農保滿指定天數後分娩，或經診斷成永久身心障礙。", note: "台灣自營耕作人口最重要的底層社會保險基石。", warning: "名下若喪失農地持有證明或退租，農保資格將面臨清查喪失。" },
+          'root-3': { icon: "🏡", title: "老農福利津貼", tag: "地底主根系 · 老農", fullTitle: "老年農民福利津貼", desc: "政府按月定額入帳的生活照顧福利（現行每月發放 8,110 元）。", trigger: "年滿65歲，農保年資合併達15年以上且符合排富規範。", note: "不需從老農個人專戶扣抵，為政府完全公費編列預算撥付。", warning: "設有嚴格之個人綜合所得與名下不動產土地公告現值排富門檻。" },
+          'root-4': { icon: "🍯", title: "農民退休儲金", tag: "地底主根系 · 農退", fullTitle: "農民退休儲金 (1:1對提)", desc: "農民自由提繳1%~10%，政府一比一對等提撥同等金額存入個人專戶。", trigger: "年滿65歲起按月領取儲金專戶本利和，保障老後尊嚴。", note: "全台灣極少數由政府每月100%全額贈送對等提繳金的超級福利。", warning: "若未在滿65歲前提繳農退儲金，退休後僅能領取基礎老農津貼。" }
+        }
+      }
+    };
+
+    // 商業樹冠防護葉資料庫
+    const canopyLeaves = {
+      'leaf-med': {
+        type: 'canopy', tag: '樹冠防禦葉 · 醫療', title: '醫療實支實付護葉',
+        desc: '抵禦微創手術、達文西機械手臂、自費特殊止血棉與病房差額的核心綠葉。',
+        note: '門診手術常設有自費限額（如1~2萬），且需特別注意健保2-2-7章節手術定義之除外限制。',
+        trigger: '因疾病或意外住院，或接受門診手術且產生健保不給付之自費單據。',
+        warning: '若未住院且非健保定義之特定手術，自費耗材可能無法全額核付。'
+      },
+      'leaf-ci': {
+        type: 'canopy', tag: '樹冠防禦葉 · 重症', title: '重大傷病晶冠',
+        desc: '遭遇癌症、罕見疾病、重大外傷時，免單據憑重大傷病卡發放百萬級一次金。',
+        note: '完全連動中央健保署重大傷病卡範圍，條款明確透明，免去傳統重大疾病之爭議。',
+        trigger: '初次確診且成功取得健保重大傷病證明核定函。',
+        warning: '先天性遺傳疾病、早產兒畸形及職業病通常在除外範圍內。'
+      },
+      'leaf-acc': {
+        type: 'canopy', tag: '樹冠防禦葉 · 意外', title: '意外巡防護葉',
+        desc: '抵禦日常生活摔倒割傷、車禍骨折未住院之中醫復健與門診特材支出。',
+        note: '必須具備「外來、突發、非疾病」三要素，因身體內在疾病引起的摔倒常衍生因果爭議。',
+        trigger: '遭遇非由疾病引起之外來突發意外事故而前往就醫。',
+        warning: '單純中風或心肌梗塞後暈倒造成的擦傷，可能被判定為疾病延伸。'
+      },
+      'leaf-disability': {
+        type: 'canopy', tag: '樹冠防禦葉 · 照護', title: '失能長照扶助葉',
+        desc: '當身體失去工作能力或生活自理機能時，提供按月長期的照護現金流支援。',
+        note: '商業失能險等級、巴氏量表長照險與勞保失能給付各自獨立判定，互不相屬。',
+        trigger: '經專科醫師診斷狀態固定，符合保單所附失能程度表或長照狀態定義。',
+        warning: '多數保單具備6個月免責期或觀察期，非確診當日即刻撥款。'
+      },
+      'fruit-retire': {
+        type: 'fruit', tag: '頂冠黃金果 · 自由', title: '熟成退休之果',
+        desc: '雙軌匯集的終極成果，整合公辦年金、法定專戶與商業終身年金的每月現金流。',
+        note: '退休規劃的關鍵是「所得替代率」能否維持在退休前薪資的70%以上。',
+        trigger: '抵達設定之退休年齡，系統化開啟現金流閥門。',
+        warning: '若僅依賴地底單一公辦根系，所得替代率通常僅有20~30%，恐衍生晚年生活落差。'
+      }
+    };
+
+    let currentGardener = "worker";
+    let activeLeaves = new Set(['leaf-med', 'leaf-acc']);
+
+    // 切換育樹身分（動態更換地底 SVG 根系文字與 Icon）
+    function setGardener(type) {
+      currentGardener = type;
+      document.querySelectorAll('.gardener-btn').forEach(b => {
+        b.className = "gardener-btn py-2 px-1 text-center bg-stone-50 border border-stone-200 text-stone-600 hover:bg-stone-100 rounded-xl text-xs font-bold transition-all";
+      });
+      const activeBtn = document.getElementById(`btn-${type}`);
+      activeBtn.className = "gardener-btn py-2 px-1 text-center bg-amber-50 border border-amber-300 text-amber-900 rounded-xl text-xs font-bold transition-all";
+
+      const profile = rootProfiles[type];
+      
+      // 更新 SVG 地底 4 條根系的標題與 Icon
+      for (let i = 1; i <= 4; i++) {
+        const rootData = profile.roots[`root-${i}`];
+        document.getElementById(`root-${i}-title`).textContent = rootData.title;
+        document.getElementById(`root-${i}-icon`).textContent = rootData.icon;
+      }
+
+      // 更新右側年鑑標籤與條目
+      document.getElementById('root-group-label').textContent = profile.label;
+      renderRootDirList();
+    }
+
+    // 渲染右側年鑑中的地底根系清單
+    function renderRootDirList() {
+      const listEl = document.getElementById('root-dir-list');
+      const profile = rootProfiles[currentGardener];
+      listEl.innerHTML = `
+        <div onclick="inspectNode('root-1')" class="flex justify-between items-center hover:text-sky-700 cursor-pointer">
+          <span><b class="text-stone-300 font-normal mr-2">01</b>${profile.roots['root-1'].fullTitle}</span>
+          <span class="text-[10px] text-sky-600 bg-sky-50 px-1 rounded">查看根系 →</span>
+        </div>
+        <div onclick="inspectNode('root-2')" class="flex justify-between items-center hover:text-sky-700 cursor-pointer">
+          <span><b class="text-stone-300 font-normal mr-2">02</b>${profile.roots['root-2'].fullTitle}</span>
+          <span class="text-[10px] text-sky-600 bg-sky-50 px-1 rounded">查看根系 →</span>
+        </div>
+        <div onclick="inspectNode('root-3')" class="flex justify-between items-center hover:text-sky-700 cursor-pointer">
+          <span><b class="text-stone-300 font-normal mr-2">03</b>${profile.roots['root-3'].fullTitle}</span>
+          <span class="text-[10px] text-sky-600 bg-sky-50 px-1 rounded">查看根系 →</span>
+        </div>
+        <div onclick="inspectNode('root-4')" class="flex justify-between items-center hover:text-sky-700 cursor-pointer">
+          <span><b class="text-stone-300 font-normal mr-2">04</b>${profile.roots['root-4'].fullTitle}</span>
+          <span class="text-[10px] text-sky-600 bg-sky-50 px-1 rounded">查看根系 →</span>
+        </div>
+      `;
+    }
+
+    // 檢視節點（滑出修剪卡片）
+    function inspectNode(key) {
+      let data;
+      if (key.startsWith('root-')) {
+        data = rootProfiles[currentGardener].roots[key];
+      } else {
+        data = canopyLeaves[key];
+      }
+      if (!data) return;
+
+      document.getElementById('card-tag').innerText = data.tag;
+      document.getElementById('card-title').innerText = data.fullTitle || data.title;
+      document.getElementById('card-desc').innerText = data.desc;
+      document.getElementById('card-note').innerText = data.note;
+      document.getElementById('card-trigger').innerText = data.trigger;
+      document.getElementById('card-warning').innerText = data.warning;
+
+      const actionBtn = document.getElementById('toggle-leaf-btn');
+      if (data.type === 'canopy') {
+        actionBtn.style.display = 'flex';
+        const isBloomed = activeLeaves.has(key);
+        if (isBloomed) {
+          actionBtn.className = "w-full py-3 rounded-xl font-bold text-xs tracking-wider bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer";
+          actionBtn.innerText = "收回此防衛葉片（還原休眠）";
+        } else {
+          actionBtn.className = "w-full py-3 rounded-xl font-bold text-xs tracking-wider bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm cursor-pointer";
+          actionBtn.innerText = "舒展並生長此防衛葉片";
+        }
+        actionBtn.onclick = () => toggleLeaf(key);
+      } else {
+        actionBtn.className = "w-full py-3 rounded-xl font-bold text-xs tracking-wider bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed";
+        actionBtn.innerText = "🏛️ 法定主根系（自然常駐扎根）";
+        actionBtn.onclick = null;
+      }
+
+      const drawer = document.getElementById('tree-drawer');
+      drawer.classList.remove('-translate-x-full', 'opacity-0', 'pointer-events-none');
+    }
+
+    // 舒展 / 收回葉片
+    function toggleLeaf(key) {
+      const leafEl = document.getElementById(key);
+      const suffix = key.replace('leaf-', '');
+      const listTag = document.getElementById(`list-status-${suffix}`);
+
+      if (activeLeaves.has(key)) {
+        activeLeaves.delete(key);
+        leafEl.classList.remove('node-bloomed');
+        leafEl.classList.add('node-dormant');
+        if (listTag) {
+          listTag.className = "text-[10px] text-stone-400 bg-stone-100 px-1 rounded";
+          listTag.innerText = "休眠中";
+        }
+      } else {
+        activeLeaves.add(key);
+        leafEl.classList.add('node-bloomed');
+        leafEl.classList.remove('node-dormant');
+        if (listTag) {
+          listTag.className = "text-[10px] text-emerald-700 bg-emerald-50 px-1 rounded";
+          listTag.innerText = "已舒展";
+        }
+      }
+
+      updateResilience();
+      closeDrawer();
+    }
+
+    function updateResilience() {
+      const count = activeLeaves.size;
+      const score = 40 + (count * 15);
+      document.getElementById('resilience-score').innerText = score;
+      document.getElementById('resilience-bar').style.width = `${score}%`;
+      document.getElementById('stat-leaves').innerText = `${count} / 4`;
+
+      const statusEl = document.getElementById('resilience-status');
+      if (score >= 85) {
+        statusEl.innerText = "樹冠茂密蔽蔭，已形成完整的全人生態防護罩，能安然抵禦各類人生風暴。";
+        statusEl.className = "mt-3 pt-3 border-t border-stone-100 text-[11px] text-emerald-700 leading-relaxed";
+      } else {
+        statusEl.innerText = "根系已扎穩，上方樹冠防禦葉片尚未完全舒展，極端醫療事故時仍可能受損。";
+        statusEl.className = "mt-3 pt-3 border-t border-stone-100 text-[11px] text-stone-500 leading-relaxed";
+      }
+    }
+
+    function closeDrawer() {
+      const drawer = document.getElementById('tree-drawer');
+      drawer.classList.add('-translate-x-full', 'opacity-0', 'pointer-events-none');
+    }
+
+    function testStorm(kind) {
+      if (kind === 'surgery') {
+        const hasMed = activeLeaves.has('leaf-med');
+        if (hasMed) {
+          alert('🌿【實支實付護葉舒展】！\n達文西手術自費25萬元全額由樹冠護葉吸收，地底水脈蓄水毫髮無損！');
+        } else {
+          alert('🍂【葉片未展，樹幹受損】！\n未舒展實支實付護葉，需動用個人自留儲蓄 25 萬元填補！');
+        }
+      } else if (kind === 'cancer') {
+        const hasCi = activeLeaves.has('leaf-ci');
+        if (hasCi) {
+          alert('🌋【重大傷病晶冠綻放】！\n憑重大傷病證明注入 100 萬元營養活泉，從容支應自費標靶！');
+        } else {
+          alert('⚠️【風暴破防】！\n缺乏重大傷病晶冠，年度百萬標靶費用將嚴重撼動家庭樹身安定！');
+        }
+      }
+    }
+
+    function expandAll() {
+      ['leaf-med', 'leaf-ci', 'leaf-acc', 'leaf-disability'].forEach(k => {
+        if (!activeLeaves.has(k)) toggleLeaf(k);
+      });
+    }
+
+    function resetTree() {
+      activeLeaves.clear();
+      ['leaf-ci', 'leaf-disability'].forEach(k => {
+        const el = document.getElementById(k);
+        el.classList.remove('node-bloomed');
+        el.classList.add('node-dormant');
+      });
+      ['leaf-med', 'leaf-acc'].forEach(k => toggleLeaf(k));
+    }
+
+    // 初始渲染
+    renderRootDirList();
+    updateResilience();
+  </script>
+</body>
+</html>
